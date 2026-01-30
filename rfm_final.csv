@@ -1,0 +1,4 @@
+,customer_id,recency,frequency,monetary
+0,1,5,3,100
+1,2,10,7,200
+2,3,15,1,50
