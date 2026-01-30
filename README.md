@@ -44,8 +44,11 @@ This project analyzes customer behavior using RFM segmentation and cohort-based 
 - Matplotlib
 - Streamlit
 
-## How to Run Dashboard
-```bash
-pip install -r requirements.txt
-streamlit run app.py
+## Dashboard Preview
+
+### Customer Segmentation Dashboard
+![Dashboard Overview](csr.png)
+
+
+
 
