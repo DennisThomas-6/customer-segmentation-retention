@@ -26,3 +26,18 @@ Simulated transactional customer data containing:
 - Pandas
 - Scikit-learn
 - Matplotlib
+## Interactive Dashboard (Streamlit)
+
+The project includes an interactive Streamlit dashboard for:
+- Customer Segmentation (RFM)
+- Cohort-based Retention Analysis
+
+### Dashboard Preview
+![Dashboard](dashboard_home.png)
+![RFM](rfm_view.png)
+![Retention](retention_view.png)
+
+To run locally:
+```bash
+pip install streamlit pandas matplotlib seaborn
+streamlit run app.py
