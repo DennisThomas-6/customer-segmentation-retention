@@ -47,7 +47,7 @@ This project analyzes customer behavior using RFM segmentation and cohort-based 
 ## Dashboard Preview
 
 ### Customer Segmentation Dashboard
-[Dashboard Overview](csr.png)
+![Dashboard Overview](dashboard1.png)
 
 
 
