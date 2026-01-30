@@ -27,17 +27,25 @@ Simulated transactional customer data containing:
 - Scikit-learn
 - Matplotlib
 ## Interactive Dashboard (Streamlit)
+# Customer Segmentation & Retention Analysis
 
-The project includes an interactive Streamlit dashboard for:
-- Customer Segmentation (RFM)
-- Cohort-based Retention Analysis
+This project analyzes customer behavior using RFM segmentation and cohort-based retention analysis.
 
-### Dashboard Preview
-![Dashboard](dashboard_home.png)
-![RFM](rfm_view.png)
-![Retention](retention_view.png)
+## Features
+- RFM-based customer segmentation
+- Cohort analysis for retention tracking
+- Interactive Streamlit dashboard
+- Real-world business insights
 
-To run locally:
+## Tech Stack
+- Python
+- Pandas, NumPy
+- Scikit-learn
+- Matplotlib
+- Streamlit
+
+## How to Run Dashboard
 ```bash
-pip install streamlit pandas matplotlib seaborn
+pip install -r requirements.txt
 streamlit run app.py
+
