@@ -75,13 +75,25 @@ st.dataframe(rfm.head(15))
 # ---------------- Clustering ----------------
 st.subheader("🎯 Customer Segmentation")
 
-k = st.slider("Number of Segments", 2, 6, 4)
+if len(rfm) < 2:
+    st.error("Not enough customers for segmentation.")
+    st.stop()
+
+max_k = min(6, len(rfm))
+
+k = st.slider(
+    "Number of Segments",
+    2,
+    max_k,
+    min(4, max_k)
+)
 
 scaler = StandardScaler()
 rfm_scaled = scaler.fit_transform(rfm)
 
 kmeans = KMeans(n_clusters=k, random_state=42)
 rfm["Cluster"] = kmeans.fit_predict(rfm_scaled)
+
 
 # Segment Labels
 def segment_label(row):
