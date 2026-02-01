@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
 
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
@@ -36,6 +35,13 @@ else:
     st.info("✅ Demo dataset loaded automatically.")
 
 # ---------------------------------------------------------
+# ✅ SPEED FIX: Limit dataset size
+# ---------------------------------------------------------
+if len(df) > 5000:
+    df = df.sample(5000, random_state=42)
+    st.warning("⚡ Large dataset detected → Using a 5000-row sample for fast execution.")
+
+# ---------------------------------------------------------
 # Preview Dataset
 # ---------------------------------------------------------
 st.subheader("📌 Dataset Preview")
@@ -68,7 +74,7 @@ st.subheader("Run Customer Segmentation")
 
 if st.button("✅ Run Segmentation Analysis"):
 
-    with st.spinner("Processing customer data... Please wait"):
+    with st.spinner("Processing... Please wait"):
 
         # Convert Date
         df["InvoiceDate"] = pd.to_datetime(df["InvoiceDate"])
@@ -86,9 +92,9 @@ if st.button("✅ Run Segmentation Analysis"):
         st.subheader("📊 RFM Feature Table")
         st.dataframe(rfm.head(10))
 
-        # Clustering Setup
-        max_k = min(6, len(rfm))
-        k = st.slider("Number of Customer Segments", 2, max_k, min(4, max_k))
+        # ✅ Cluster count limited for speed
+        max_k = min(4, len(rfm))
+        k = st.slider("Number of Customer Segments", 2, max_k, 3)
 
         scaler = StandardScaler()
         scaled = scaler.fit_transform(rfm)
@@ -100,16 +106,6 @@ if st.button("✅ Run Segmentation Analysis"):
         # Show Cluster Distribution
         st.subheader("🎯 Customer Segment Distribution")
         st.bar_chart(rfm["Cluster"].value_counts())
-
-        # Scatter Visualization
-        st.subheader("📍 Cluster Visualization")
-
-        fig = plt.figure()
-        plt.scatter(rfm["Frequency"], rfm["Monetary"], c=rfm["Cluster"])
-        plt.xlabel("Frequency")
-        plt.ylabel("Monetary Value")
-        plt.title("Customer Segmentation Clusters")
-        st.pyplot(fig)
 
         st.success("✅ Segmentation Completed Successfully!")
 
