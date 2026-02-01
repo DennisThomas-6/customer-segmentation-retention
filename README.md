@@ -44,6 +44,14 @@ This project analyzes customer behavior using RFM segmentation and cohort-based 
 - Matplotlib
 - Streamlit
 
+## 🔗 Live Dashboard
+
+🚀 **Streamlit App:**  
+https://customer-segmentation-retention-orxufwdxtpghf2vzzbja4r.streamlit.app
+> This dashboard visualizes customer segmentation and retention metrics using cohort analysis, RFM features, and interactive charts built with Streamlit.
+
+
+
 ## Dashboard Preview
 
 ### Customer Segmentation Dashboard
