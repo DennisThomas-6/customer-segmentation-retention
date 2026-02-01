@@ -4,45 +4,46 @@ import matplotlib.pyplot as plt
 
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
-from sklearn.ensemble import RandomForestClassifier
 
+st.set_page_config(page_title="Customer Segmentation Dashboard", layout="wide")
 
-st.set_page_config(page_title="Customer Analytics Dashboard", layout="wide")
+st.title("🚀 Customer Segmentation Dashboard")
+st.write("Fast customer segmentation using RFM + KMeans clustering.")
 
-st.title("🚀 Enterprise Customer Segmentation & Churn Dashboard")
-st.write(
-    "Interactive analytics dashboard for customer segmentation, churn risk prediction, "
-    "and business insights using RFM + Machine Learning."
-)
-
-
-st.sidebar.title("Data Input")
+# ---------------------------------------------------------
+# Sidebar Option
+# ---------------------------------------------------------
 mode = st.sidebar.radio(
-    "Choose dataset:",
+    "Choose Input Mode:",
     ["Use Demo Dataset", "Upload My Dataset"]
 )
 
-
+# ---------------------------------------------------------
+# Load Dataset
+# ---------------------------------------------------------
 if mode == "Upload My Dataset":
-
     uploaded_file = st.file_uploader("Upload CSV File", type=["csv"])
 
     if uploaded_file:
         df = pd.read_csv(uploaded_file)
-        st.success("✅ Dataset uploaded successfully.")
+        st.success("✅ Dataset Uploaded Successfully!")
     else:
         st.warning("Please upload a dataset to continue.")
         st.stop()
 
 else:
     df = pd.read_csv("transactions_final.csv")
-    st.info("✅ Demo dataset loaded automatically for portfolio showcase.")
+    st.info("✅ Demo dataset loaded automatically.")
 
+# ---------------------------------------------------------
+# Preview Dataset
+# ---------------------------------------------------------
+st.subheader("📌 Dataset Preview")
+st.dataframe(df.head(15))
 
-st.subheader("Dataset Preview")
-st.dataframe(df.head())
-
-
+# ---------------------------------------------------------
+# Fix Column Names Automatically
+# ---------------------------------------------------------
 df.columns = [c.strip().lower() for c in df.columns]
 df = df.loc[:, ~df.columns.str.contains("unnamed")]
 
@@ -55,97 +56,62 @@ if "order_date" in df.columns:
 if "order_amount" in df.columns:
     df.rename(columns={"order_amount": "Amount"}, inplace=True)
 
+# Required column check
 if not all(col in df.columns for col in ["CustomerID", "InvoiceDate", "Amount"]):
-    st.error("Dataset must contain customer, transaction date, and amount columns.")
+    st.error("Dataset must contain CustomerID, InvoiceDate, Amount columns.")
     st.stop()
 
+# ---------------------------------------------------------
+# Button-Based Execution (FAST FIX)
+# ---------------------------------------------------------
+st.subheader("Run Customer Segmentation")
 
-df["InvoiceDate"] = pd.to_datetime(df["InvoiceDate"])
-snapshot_date = df["InvoiceDate"].max() + pd.Timedelta(days=1)
+if st.button("✅ Run Segmentation Analysis"):
 
-rfm = df.groupby("CustomerID").agg({
-    "InvoiceDate": lambda x: (snapshot_date - x.max()).days,
-    "CustomerID": "count",
-    "Amount": "sum"
-})
+    with st.spinner("Processing customer data... Please wait"):
 
-rfm.columns = ["Recency", "Frequency", "Monetary"]
+        # Convert Date
+        df["InvoiceDate"] = pd.to_datetime(df["InvoiceDate"])
+        snapshot_date = df["InvoiceDate"].max() + pd.Timedelta(days=1)
 
-st.subheader("RFM Customer Features")
-st.dataframe(rfm.head())
+        # Build RFM Table
+        rfm = df.groupby("CustomerID").agg({
+            "InvoiceDate": lambda x: (snapshot_date - x.max()).days,
+            "CustomerID": "count",
+            "Amount": "sum"
+        })
 
+        rfm.columns = ["Recency", "Frequency", "Monetary"]
 
-k = st.slider("Number of Segments", 2, 6, 4)
+        st.subheader("📊 RFM Feature Table")
+        st.dataframe(rfm.head(10))
 
-scaler = StandardScaler()
-rfm_scaled = scaler.fit_transform(rfm)
+        # Clustering Setup
+        max_k = min(6, len(rfm))
+        k = st.slider("Number of Customer Segments", 2, max_k, min(4, max_k))
 
-kmeans = KMeans(n_clusters=k, random_state=42)
-rfm["Cluster"] = kmeans.fit_predict(rfm_scaled)
+        scaler = StandardScaler()
+        scaled = scaler.fit_transform(rfm)
 
-st.subheader("Customer Segment Distribution")
-st.bar_chart(rfm["Cluster"].value_counts())
+        # Apply KMeans
+        kmeans = KMeans(n_clusters=k, random_state=42)
+        rfm["Cluster"] = kmeans.fit_predict(scaled)
 
+        # Show Cluster Distribution
+        st.subheader("🎯 Customer Segment Distribution")
+        st.bar_chart(rfm["Cluster"].value_counts())
 
-def segment_label(row):
-    if row["Recency"] < 30 and row["Monetary"] > rfm["Monetary"].quantile(0.75):
-        return "VIP Customers 💎"
-    elif row["Recency"] > 90:
-        return "At Risk Customers ⚠️"
-    elif row["Frequency"] > rfm["Frequency"].quantile(0.75):
-        return "Loyal Customers ❤️"
-    return "Regular Customers 🆕"
+        # Scatter Visualization
+        st.subheader("📍 Cluster Visualization")
 
+        fig = plt.figure()
+        plt.scatter(rfm["Frequency"], rfm["Monetary"], c=rfm["Cluster"])
+        plt.xlabel("Frequency")
+        plt.ylabel("Monetary Value")
+        plt.title("Customer Segmentation Clusters")
+        st.pyplot(fig)
 
-rfm["Segment"] = rfm.apply(segment_label, axis=1)
+        st.success("✅ Segmentation Completed Successfully!")
 
-st.subheader("Business Segment Examples")
-st.dataframe(rfm.head())
-
-
-rfm["Churn"] = (rfm["Recency"] > 90).astype(int)
-
-X = rfm[["Recency", "Frequency", "Monetary"]]
-y = rfm["Churn"]
-
-model = RandomForestClassifier()
-model.fit(X, y)
-
-rfm["Churn_Risk"] = model.predict_proba(X)[:, 1]
-
-st.subheader("Top High-Risk Customers")
-st.dataframe(rfm.sort_values("Churn_Risk", ascending=False).head(10))
-
-
-st.subheader("Executive Summary")
-
-col1, col2, col3, col4 = st.columns(4)
-
-col1.metric("Total Customers", len(rfm))
-col2.metric("VIP Customers", (rfm["Segment"] == "VIP Customers 💎").sum())
-col3.metric("At Risk Customers", (rfm["Segment"] == "At Risk Customers ⚠️").sum())
-col4.metric("Avg Churn Risk", round(rfm["Churn_Risk"].mean(), 2))
-
-
-st.subheader("Cluster Visualization")
-
-fig = plt.figure()
-plt.scatter(rfm["Frequency"], rfm["Monetary"], c=rfm["Cluster"])
-plt.xlabel("Frequency")
-plt.ylabel("Monetary Value")
-plt.title("Customer Segmentation Clusters")
-st.pyplot(fig)
-
-
-st.subheader("Download Report")
-
-csv = rfm.to_csv().encode("utf-8")
-
-st.download_button(
-    "Download Customer Segmentation Results",
-    csv,
-    file_name="customer_segmentation_report.csv",
-    mime="text/csv"
-)
-
-st.success("✅ Dashboard generated successfully!")
+else:
+    st.info("Click the button above to run segmentation analysis.")
