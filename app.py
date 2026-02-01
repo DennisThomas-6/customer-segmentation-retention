@@ -57,6 +57,24 @@ else:
 
     st.write("Preview of Demo Dataset:")
     st.dataframe(df.head())
+    # ---------------------------------------------------------
+# ✅ AUTO FIX COLUMN NAMES (Supports Any Dataset)
+# ---------------------------------------------------------
+
+df.columns = [c.lower() for c in df.columns]
+
+# Customer column mapping
+if "customer_id" in df.columns:
+    df.rename(columns={"customer_id": "CustomerID"}, inplace=True)
+
+# Date column mapping
+if "order_date" in df.columns:
+    df.rename(columns={"order_date": "InvoiceDate"}, inplace=True)
+
+# Amount column mapping
+if "order_amount" in df.columns:
+    df.rename(columns={"order_amount": "Amount"}, inplace=True)
+
 
 
 # ---------------------------------------------------------
